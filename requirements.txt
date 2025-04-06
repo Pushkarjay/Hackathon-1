@@ -1,0 +1,4 @@
+ollama
+pypdf2
+nltk
+pandas
