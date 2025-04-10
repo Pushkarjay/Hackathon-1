@@ -59,6 +59,11 @@ def match_cv(cv_path, jd_summary):
 # Shortlisting Agent
 def shortlist_candidate(cv_id, score, threshold=80):
     """Shortlists candidates based on match score."""
+    try:
+        score = float(score)  # Ensure score is a float
+    except ValueError:
+        print(f"Invalid score for {cv_id}: {score}")
+        return False
     if score >= threshold:
         save_candidate(cv_id, score)
         return True

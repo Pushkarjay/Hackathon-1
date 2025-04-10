@@ -1,8 +1,17 @@
 import PyPDF2
 import nltk
 import re
+import os
 from nltk.tokenize import word_tokenize
-nltk.download('punkt', quiet=True)
+from nltk.data import find
+
+# Ensure 'punkt' and 'punkt_tab' are downloaded
+try:
+    find('tokenizers/punkt')
+    find('tokenizers/punkt_tab')
+except LookupError:
+    nltk.download('punkt', quiet=True)
+    nltk.download('punkt_tab', quiet=True)
 
 def extract_text_from_pdf(pdf_path):
     """Extracts text from a PDF file."""
