@@ -6,13 +6,18 @@ from utils import extract_text_from_pdf, preprocess_text
 import smtplib
 from email.mime.text import MIMEText
 import os
+import requests  # Add this import
 
 # Load environment variables from .env file
 load_dotenv()
 
+# Replace Ollama API calls with Gemini API calls
+GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"
+GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+
 # JD Summarizer Agent
 def summarize_jd(file_path):
-    """Summarizes job description from CSV using Ollama."""
+    """Summarizes job description from CSV using Gemini."""
     try:
         # Try reading with UTF-8 first
         df = pd.read_csv(file_path, encoding='utf-8')
@@ -28,12 +33,16 @@ def summarize_jd(file_path):
 
     try:
         jd_text = df.iloc[0]['Job Description']  # Take first JD for demo
-        prompt = f"Summarize this job description into key skills and experience: {jd_text}"
-        response = ollama.chat(model="mistral", messages=[{"role": "user", "content": prompt}])
-        if "message" in response and "content" in response["message"]:
-            return response["message"]["content"]  # e.g., "Skills: Python, Java; Experience: 3+ years"
+        payload = {
+            "contents": [{"parts": [{"text": f"Summarize this job description into key skills and experience: {jd_text}"}]}]
+        }
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(GEMINI_API_URL, headers=headers, json=payload, params={"key": GEMINI_API_KEY})
+        response_data = response.json()
+        if response.status_code == 200 and "contents" in response_data:
+            return response_data["contents"][0]["parts"][0]["text"]
         else:
-            print("Error: Unexpected response format from Ollama API.")
+            print(f"Error: Unexpected response format from Gemini API. {response_data}")
             return None
     except Exception as e:
         print(f"Error in JD summarization: {str(e)}")
@@ -41,18 +50,27 @@ def summarize_jd(file_path):
 
 # CV Matching Agent
 def match_cv(cv_path, jd_summary):
-    """Extracts CV data and matches it with JD summary."""
+    """Extracts CV data and matches it with JD summary using Gemini."""
     try:
         cv_text = extract_text_from_pdf(cv_path)
         cv_processed = preprocess_text(cv_text)
         prompt = f"Extract skills and experience from: {cv_processed}\nMatch with: {jd_summary}\nReturn a score (0-100)."
-        response = ollama.chat(model="mistral", messages=[{"role": "user", "content": prompt}])
-        try:
-            score = float(response["message"]["content"].split("Score: ")[-1].strip())
-        except (IndexError, ValueError):
-            print("Error parsing score from response.")
-            score = 0  # Fallback if parsing fails
-        return score
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}]
+        }
+        headers = {"Content-Type": "application/json"}
+        response = requests.post(GEMINI_API_URL, headers=headers, json=payload, params={"key": GEMINI_API_KEY})
+        response_data = response.json()
+        if response.status_code == 200 and "contents" in response_data:
+            try:
+                score = float(response_data["contents"][0]["parts"][0]["text"].split("Score: ")[-1].strip())
+                return score
+            except (IndexError, ValueError):
+                print("Error parsing score from response.")
+                return 0
+        else:
+            print(f"Error: Unexpected response format from Gemini API. {response_data}")
+            return 0
     except FileNotFoundError:
         print(f"Error: CV file not found at {cv_path}")
         return 0

@@ -33,10 +33,9 @@ HireSmart is an AI-powered recruitment automation tool designed to streamline th
 
 4. Set up the `.env` file:
    - Create a `.env` file in the root directory.
-   - Add your email credentials:
+   - Add your Gemini API key:
      ```
-     SENDER_EMAIL=your_email@example.com
-     SENDER_PASSWORD=your_app_specific_password
+     GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
      ```
 
 5. Run the application:
@@ -63,7 +62,7 @@ HireSmart is an AI-powered recruitment automation tool designed to streamline th
 - `data/`: Contains job descriptions and CVs.
 
 ## Notes
-- Ensure you have an app-specific password for your email if using Gmail.
+- Ensure you have a valid Gemini API key for the application.
 - Do not push the `.env` file or database file to GitHub.
 
 ## License
