@@ -30,7 +30,11 @@ def summarize_jd(file_path):
         jd_text = df.iloc[0]['Job Description']  # Take first JD for demo
         prompt = f"Summarize this job description into key skills and experience: {jd_text}"
         response = ollama.chat(model="mistral", messages=[{"role": "user", "content": prompt}])
-        return response["message"]["content"]  # e.g., "Skills: Python, Java; Experience: 3+ years"
+        if "message" in response and "content" in response["message"]:
+            return response["message"]["content"]  # e.g., "Skills: Python, Java; Experience: 3+ years"
+        else:
+            print("Error: Unexpected response format from Ollama API.")
+            return None
     except Exception as e:
         print(f"Error in JD summarization: {str(e)}")
         return None
@@ -57,7 +61,7 @@ def match_cv(cv_path, jd_summary):
         return 0
 
 # Shortlisting Agent
-def shortlist_candidate(cv_id, score, threshold=80):
+def shortlist_candidate(cv_id, score, email=None, threshold=80):
     """Shortlists candidates based on match score."""
     try:
         score = float(score)  # Ensure score is a float
@@ -65,7 +69,7 @@ def shortlist_candidate(cv_id, score, threshold=80):
         print(f"Invalid score for {cv_id}: {score}")
         return False
     if score >= threshold:
-        save_candidate(cv_id, score)
+        save_candidate(cv_id, score, email or "unknown@example.com")
         return True
     return False
 
@@ -104,5 +108,5 @@ if __name__ == "__main__":
     jd_summary = summarize_jd("data/job_description.csv")
     if jd_summary:
         score = match_cv("data/CVs1/C1061.pdf", jd_summary)
-        if shortlist_candidate("C1061", score):
+        if shortlist_candidate("C1061", score, email="alyssachavez88@gmail.com"):
             print(schedule_interview("C1061", "alyssachavez88@gmail.com"))

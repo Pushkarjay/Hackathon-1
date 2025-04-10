@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HireSmart</title>
+    <link rel="stylesheet" href="/static/styles.css"> <!-- Link to CSS -->
+    <script src="/static/scripts.js" defer></script> <!-- Link to JS -->
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>HireSmart - Recruitment Automation</h1>
+    <form id="upload-form" method="post" enctype="multipart/form-data">
+        <label>Upload Job Description (CSV):</label><br>
+        <input type="file" name="jd_file" accept=".csv" required><br><br>
+        <label>Upload CVs (PDFs):</label><br>
+        <input type="file" name="cv_files" accept=".pdf" multiple required><br><br>
+        <button id="process-button" type="submit">Process</button>
+    </form>
+
+    {% if results %}
+        <h2>Processing Results</h2>
+        <table>
+            <tr>
+                <th>CV ID</th>
+                <th>Score</th>
+                <th>Email</th>
+                <th>Shortlisted</th>
+                <th>Email Status</th>
+            </tr>
+            {% for result in results %}
+                <tr>
+                    <td>{{ result.cv_id }}</td>
+                    <td>{{ result.score }}</td>
+                    <td>{{ result.email }}</td>
+                    <td>{{ result.shortlisted }}</td>
+                    <td>{{ result.email_result }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+    {% if shortlisted %}
+        <h2>Shortlisted Candidates (Database)</h2>
+        <table>
+            <tr>
+                <th>CV ID</th>
+                <th>Score</th>
+                <th>Email</th>
+            </tr>
+            {% for candidate in shortlisted %}
+                <tr>
+                    <td>{{ candidate[0] }}</td>
+                    <td>{{ candidate[1] }}</td>
+                    <td>{{ candidate[2] }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</body>
+</html>
